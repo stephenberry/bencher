@@ -112,6 +112,8 @@ struct chart_config
    double font_size_bar_label = 24.0; // Font size for bar names
    double font_size_value_label = 24.0; // Font size for value labels above bars
    std::string title = "";
+   double label_rotation = -45.0; // Rotation angle for bar labels in degrees (0 = horizontal, -45 = diagonal, -90 = vertical)
+   std::string background_color = "#FFFFFF"; // Background color for the chart
 };
 
 inline std::string generate_bar_chart_svg(const std::vector<std::string>& names, const std::vector<double>& data,
@@ -162,6 +164,11 @@ inline std::string generate_bar_chart_svg(const std::vector<std::string>& names,
    svg += std::format(
       "<svg width=\"{}\" height=\"{}\" viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n",
       cfg.chart_width, cfg.chart_height, static_cast<int>(cfg.chart_width), static_cast<int>(cfg.chart_height));
+
+   // Background rectangle
+   svg += std::format(
+      "  <rect width=\"100%\" height=\"100%\" fill=\"{}\"/>\n",
+      cfg.background_color);
 
    // Define gradients
    svg += "  <defs>\n";
@@ -258,11 +265,27 @@ inline std::string generate_bar_chart_svg(const std::vector<std::string>& names,
 
       // Draw the label below the bar
       double label_x = bar_x + (dynamic_bar_width / 2.0);
-      double label_y = cfg.chart_height - (cfg.margin_bottom / 3.0);
-      svg += std::format(
-         "  <text x=\"{:.2f}\" y=\"{:.2f}\" text-anchor=\"middle\" font-family=\"Arial, Helvetica, sans-serif\" "
-         "font-size=\"{:.1f}\" font-weight=\"bold\" fill=\"#333\" transform=\"translate(0, 0)\">{}</text>\n",
-         label_x, label_y - 40, cfg.font_size_bar_label, names[i]);
+      double label_y = cfg.chart_height - cfg.margin_bottom + 20;
+
+      // Determine text-anchor based on rotation
+      std::string text_anchor = "middle";
+      if (cfg.label_rotation < -10.0) {
+         text_anchor = "end";
+      } else if (cfg.label_rotation > 10.0) {
+         text_anchor = "start";
+      }
+
+      if (cfg.label_rotation != 0.0) {
+         svg += std::format(
+            "  <text x=\"{:.2f}\" y=\"{:.2f}\" text-anchor=\"{}\" font-family=\"Arial, Helvetica, sans-serif\" "
+            "font-size=\"{:.1f}\" font-weight=\"bold\" fill=\"#333\" transform=\"rotate({:.1f}, {:.2f}, {:.2f})\">{}</text>\n",
+            label_x, label_y, text_anchor, cfg.font_size_bar_label, cfg.label_rotation, label_x, label_y, names[i]);
+      } else {
+         svg += std::format(
+            "  <text x=\"{:.2f}\" y=\"{:.2f}\" text-anchor=\"middle\" font-family=\"Arial, Helvetica, sans-serif\" "
+            "font-size=\"{:.1f}\" font-weight=\"bold\" fill=\"#333\">{}</text>\n",
+            label_x, label_y, cfg.font_size_bar_label, names[i]);
+      }
 
       // Move to the next bar position
       x_pos += (dynamic_bar_width + bar_gap);

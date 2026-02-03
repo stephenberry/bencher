@@ -87,7 +87,7 @@ namespace bencher
       std::cout << format_bar_chart(names, values);
    }
 
-   inline std::string bar_chart(const bencher::stage& stage)
+   inline std::string bar_chart(const bencher::stage& stage, chart_config cfg = {})
    {
       const auto& results = stage.results;
       std::vector<std::string> names;
@@ -96,8 +96,9 @@ namespace bencher
          names.emplace_back(metric.name);
          data.emplace_back(metric.throughput_mb_per_sec);
       }
-      chart_config cfg;
-      cfg.y_axis_label = "MB/s";
+      if (cfg.y_axis_label.empty()) {
+         cfg.y_axis_label = "MB/s";
+      }
       return generate_bar_chart_svg(names, data, cfg);
    }
 
