@@ -167,8 +167,8 @@ inline std::string generate_bar_chart_svg(const std::vector<std::string>& names,
 
    // Background rectangle
    svg += std::format(
-      "  <rect x=\"0\" y=\"0\" width=\"{}\" height=\"{}\" style=\"fill:{}\"/>\n",
-      static_cast<int>(cfg.chart_width), static_cast<int>(cfg.chart_height), cfg.background_color);
+      "  <rect width=\"100%\" height=\"100%\" fill=\"{}\"/>\n",
+      cfg.background_color);
 
    // Define gradients
    svg += "  <defs>\n";
