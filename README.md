@@ -80,6 +80,9 @@ struct stage {
    uint64_t max_execution_count = 1000;          // Maximum iterations
    double confidence_interval_threshold = 2.0;   // Target CI threshold (±%)
    std::string baseline{};                       // Baseline for comparison (empty = slowest)
+   double throughput_units_divisor = 1024 * 1024; // Units divisor (default MB/s)
+   std::string throughput_units_label = "MB/s";  // Label for throughput unit
+   std::string processed_units_label = "Bytes";  // Label for processed units
 
    // Run a benchmark (function can return uint64_t bytes or void)
    template <class Function, class... Args>
@@ -125,6 +128,22 @@ This is useful when:
 - You only care about execution time, not throughput
 - The concept of "bytes processed" doesn't apply to your workload
 - You're measuring latency rather than data processing speed
+
+### Custom Units (ops/s, items/s, etc.)
+
+You can change the throughput units and labels for non-byte workloads:
+
+```cpp
+bencher::stage stage{"Zero-Copy Read"};
+stage.throughput_units_divisor = 1.0;
+stage.throughput_units_label = "ops/s";
+stage.processed_units_label = "Ops";
+
+stage.run("My Format", [&] {
+   // ...
+   return ops_processed; // return number of ops
+});
+```
 
 ### Parameterized Benchmarks
 

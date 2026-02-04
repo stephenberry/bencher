@@ -97,7 +97,7 @@ namespace bencher
          data.emplace_back(metric.throughput_mb_per_sec);
       }
       if (cfg.y_axis_label.empty()) {
-         cfg.y_axis_label = "MB/s";
+         cfg.y_axis_label = stage.throughput_units_label;
       }
       return generate_bar_chart_svg(names, data, cfg);
    }
@@ -105,6 +105,8 @@ namespace bencher
    inline void print_results(const bencher::stage& stage, bool show_comparison = true)
    {
       std::vector<performance_metrics> metrics = stage.results;
+      const std::string processed_label = stage.processed_units_label + " Processed";
+      const std::string throughput_label = "Throughput (" + stage.throughput_units_label + ")";
 
       std::cout << "\nPerformance Metrics for: " << stage.name << "\n";
       std::cout << "----------------------------------------------------\n";
@@ -145,8 +147,8 @@ namespace bencher
             }
          };
 
-         print_metric("Bytes Processed", value.bytes_processed);
-         print_metric("Throughput (MB/s)", value.throughput_mb_per_sec);
+         print_metric(processed_label, value.bytes_processed);
+         print_metric(throughput_label, value.throughput_mb_per_sec);
          print_metric("Throughput MAD (±%)", value.throughput_median_percentage_deviation);
          print_metric("Instructions per Execution", value.instructions_per_execution);
          print_metric("Instructions Percentage Deviation (±%)", value.instructions_percentage_deviation);
@@ -229,6 +231,9 @@ namespace bencher
       std::vector<performance_metrics> metrics = stage.results;
       std::sort(metrics.begin(), metrics.end(), std::greater<performance_metrics>{});
 
+      const std::string processed_label = stage.processed_units_label + " Processed";
+      const std::string throughput_label = "Throughput (" + stage.throughput_units_label + ")";
+
       std::string markdown;
       markdown.reserve(4096);
 
@@ -279,8 +284,8 @@ namespace bencher
          markdown.append(value.name);
          markdown.append("\n\n");
 
-         markdown.append(format_metric("Bytes Processed", value.bytes_processed));
-         markdown.append(format_metric("Throughput (MB/s)", value.throughput_mb_per_sec));
+         markdown.append(format_metric(processed_label, value.bytes_processed));
+         markdown.append(format_metric(throughput_label, value.throughput_mb_per_sec));
          markdown.append(
             format_metric("Throughput MAD (±%)", value.throughput_median_percentage_deviation));
          markdown.append(format_metric("Instructions per Execution", value.instructions_per_execution));

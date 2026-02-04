@@ -24,6 +24,7 @@ namespace bencher
 {
    struct performance_metrics
    {
+      // Throughput in units/sec (defaults to MB/s when stage uses bytes + 1024^2 divisor)
       double throughput_mb_per_sec{};
       std::optional<double> instructions_percentage_deviation;
       // Renamed field from throughput_percentage_deviation to throughput_median_percentage_deviation
@@ -122,6 +123,13 @@ namespace bencher
       // Baseline for comparison (empty string means compare to slowest)
       std::string baseline{};
 
+      // Throughput customization
+      // Units per second are computed as (bytes_processed / throughput_units_divisor) / time.
+      // Default yields MB/s. For ops/s, set divisor = 1.0 and labels accordingly.
+      double throughput_units_divisor = 1024.0 * 1024.0;
+      std::string throughput_units_label = "MB/s";
+      std::string processed_units_label = "Bytes";
+
       // Tracks whether warmup has been performed for this stage
       mutable bool warmed_up = false;
 
@@ -154,7 +162,7 @@ namespace bencher
             std::cerr << ec.message() << '\n';
          }
 
-         // We will collect individual throughput measurements (MB/s) here
+         // We will collect individual throughput measurements (units/sec) here
          // for each run to compute a confidence interval.
          std::vector<double> throughput_values;
          throughput_values.reserve(max_execution_count);
@@ -178,12 +186,12 @@ namespace bencher
             double run_ns = events[i].elapsed_ns();
             bytes_processed = static_cast<double>(events[i].bytes_processed);
 
-            // Convert ns -> s and bytes -> MB
-            // single-run throughput = MB/s
-            double mb_processed = bytes_processed / (1024.0 * 1024.0);
-            double run_throughput_mb_per_s = (run_ns > 0.0) ? (mb_processed * 1e9 / run_ns) : 0.0;
+            // Convert ns -> s and bytes -> units
+            // single-run throughput = units/s
+            double units_processed = bytes_processed / throughput_units_divisor;
+            double run_throughput_units_per_s = (run_ns > 0.0) ? (units_processed * 1e9 / run_ns) : 0.0;
 
-            throughput_values.emplace_back(run_throughput_mb_per_s);
+            throughput_values.emplace_back(run_throughput_units_per_s);
 
             // Only start checking CI after we've met min_execution_count
             if (i >= min_execution_count - 1 && throughput_values.size() > 1) {
@@ -293,10 +301,10 @@ namespace bencher
             double run_ns = events[i].elapsed_ns();
             bytes_processed = static_cast<double>(events[i].bytes_processed);
 
-            double mb_processed = bytes_processed / (1024.0 * 1024.0);
-            double run_throughput_mb_per_s = (run_ns > 0.0) ? (mb_processed * 1e9 / run_ns) : 0.0;
+            double units_processed = bytes_processed / throughput_units_divisor;
+            double run_throughput_units_per_s = (run_ns > 0.0) ? (units_processed * 1e9 / run_ns) : 0.0;
 
-            throughput_values.emplace_back(run_throughput_mb_per_s);
+            throughput_values.emplace_back(run_throughput_units_per_s);
 
             if (i >= min_execution_count - 1 && throughput_values.size() > 1) {
                double mean_val = stats::mean(throughput_values);
