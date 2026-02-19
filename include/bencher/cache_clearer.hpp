@@ -78,12 +78,14 @@ namespace bencher
 
    inline size_t get_l1_cache_size()
    {
+      constexpr size_t l1_cache_size_fallback = 64u * 1024u;
       size_t l1_cache_size = 0;
       size_t size = sizeof(l1_cache_size);
 
-      if (sysctlbyname("hw.l1dcachesize", &l1_cache_size, &size, nullptr, 0) != 0) {
-         std::cerr << "Failed to retrieve L1 cache size using sysctl!" << std::endl;
-         return 0;
+      // Some restricted macOS environments do not expose this sysctl.
+      // Fall back silently so benchmark output stays clean.
+      if (sysctlbyname("hw.l1dcachesize", &l1_cache_size, &size, nullptr, 0) != 0 || l1_cache_size == 0) {
+         return l1_cache_size_fallback;
       }
 
       return l1_cache_size;

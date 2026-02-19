@@ -159,7 +159,12 @@ namespace bencher
          event_collector collector{};
 
          if (auto ec = collector.error()) {
-            std::cerr << ec.message() << '\n';
+#if defined(BENCH_MAC)
+            if (ec != mac_error_code::permission_denied)
+#endif
+            {
+               std::cerr << ec.message() << '\n';
+            }
          }
 
          // We will collect individual throughput measurements (units/sec) here
@@ -276,7 +281,12 @@ namespace bencher
          event_collector collector{};
 
          if (auto ec = collector.error()) {
-            std::cerr << ec.message() << '\n';
+#if defined(BENCH_MAC)
+            if (ec != mac_error_code::permission_denied)
+#endif
+            {
+               std::cerr << ec.message() << '\n';
+            }
          }
 
          std::vector<double> throughput_values;
