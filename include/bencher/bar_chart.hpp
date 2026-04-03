@@ -94,6 +94,23 @@ namespace themes
    };
 }
 
+inline std::string xml_escape(const std::string& s)
+{
+   std::string result;
+   result.reserve(s.size());
+   for (char c : s) {
+      switch (c) {
+      case '&': result += "&amp;"; break;
+      case '<': result += "&lt;"; break;
+      case '>': result += "&gt;"; break;
+      case '"': result += "&quot;"; break;
+      case '\'': result += "&apos;"; break;
+      default: result += c;
+      }
+   }
+   return result;
+}
+
 struct chart_config
 {
    double chart_width = 1000;
@@ -189,21 +206,21 @@ inline std::string generate_bar_chart_svg(const std::vector<std::string>& names,
    svg += std::format(
       "  <text x=\"{}\" y=\"{}\" text-anchor=\"middle\" font-family=\"Arial, Helvetica, sans-serif\" "
       "font-size=\"{:.1f}\" font-weight=\"bold\">{}</text>\n",
-      cfg.chart_width / 2.0, cfg.margin_top / 2.0, cfg.font_size_title, cfg.title);
+      cfg.chart_width / 2.0, cfg.margin_top / 2.0, cfg.font_size_title, xml_escape(cfg.title));
 
    // Y-axis label
    svg += std::format(
       "  <text x=\"{}\" y=\"{}\" text-anchor=\"middle\" transform=\"rotate(-90, {}, {})\" "
       "font-family=\"Arial, Helvetica, sans-serif\" font-size=\"{:.1f}\" font-weight=\"bold\">{}</text>\n",
       (cfg.margin_left / 2.0), (cfg.chart_height / 2.0), (cfg.margin_left / 2.5), (cfg.chart_height / 2.0),
-      cfg.font_size_axis_label, cfg.y_axis_label);
+      cfg.font_size_axis_label, xml_escape(cfg.y_axis_label));
 
    // X-axis label
    svg += std::format(
       "  <text x=\"{}\" y=\"{}\" text-anchor=\"middle\" font-family=\"Arial, Helvetica, sans-serif\" "
       "font-size=\"{:.1f}\" font-weight=\"bold\">{}</text>\n",
       cfg.margin_left + (cfg.chart_width - cfg.margin_left - cfg.margin_right) / 2.0,
-      cfg.chart_height - cfg.margin_bottom / 3.0, cfg.font_size_axis_label, cfg.x_axis_label);
+      cfg.chart_height - cfg.margin_bottom / 3.0, cfg.font_size_axis_label, xml_escape(cfg.x_axis_label));
 
    // Y-axis line
    double y_axis_x = cfg.margin_left;
@@ -279,12 +296,12 @@ inline std::string generate_bar_chart_svg(const std::vector<std::string>& names,
          svg += std::format(
             "  <text x=\"{:.2f}\" y=\"{:.2f}\" text-anchor=\"{}\" font-family=\"Arial, Helvetica, sans-serif\" "
             "font-size=\"{:.1f}\" font-weight=\"bold\" fill=\"#333\" transform=\"rotate({:.1f}, {:.2f}, {:.2f})\">{}</text>\n",
-            label_x, label_y, text_anchor, cfg.font_size_bar_label, cfg.label_rotation, label_x, label_y, names[i]);
+            label_x, label_y, text_anchor, cfg.font_size_bar_label, cfg.label_rotation, label_x, label_y, xml_escape(names[i]));
       } else {
          svg += std::format(
             "  <text x=\"{:.2f}\" y=\"{:.2f}\" text-anchor=\"middle\" font-family=\"Arial, Helvetica, sans-serif\" "
             "font-size=\"{:.1f}\" font-weight=\"bold\" fill=\"#333\">{}</text>\n",
-            label_x, label_y, cfg.font_size_bar_label, names[i]);
+            label_x, label_y, cfg.font_size_bar_label, xml_escape(names[i]));
       }
 
       // Move to the next bar position
