@@ -4,17 +4,18 @@
 
 #if defined(BENCH_LINUX)
 
-#include <linux/perf_event.h>
 #include <asm/unistd.h>
+#include <libgen.h>
+#include <linux/perf_event.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <system_error>
 #include <type_traits>
-#include <unistd.h>
-#include <iostream>
-#include <libgen.h>
-#include <cstring>
-#include <cerrno>
 #include <vector>
 
 namespace bencher
@@ -145,7 +146,8 @@ namespace bencher
    {
       event_collector_type()
          : linux_events<>{std::vector<int32_t>{PERF_COUNT_HW_CPU_CYCLES, PERF_COUNT_HW_INSTRUCTIONS,
-                                               PERF_COUNT_HW_BRANCH_INSTRUCTIONS, PERF_COUNT_HW_BRANCH_MISSES}} {}
+                                               PERF_COUNT_HW_BRANCH_INSTRUCTIONS, PERF_COUNT_HW_BRANCH_MISSES}}
+      {}
 
       BENCH_ALWAYS_INLINE bool has_events() { return linux_events<>::is_working(); }
 
@@ -158,7 +160,8 @@ namespace bencher
       }
 
       template <class Function, class... FuncArgs>
-      [[nodiscard]] BENCH_ALWAYS_INLINE std::error_condition start(event_count& count, Function&& function, FuncArgs&&... func_args)
+      [[nodiscard]] BENCH_ALWAYS_INLINE std::error_condition start(event_count& count, Function&& function,
+                                                                   FuncArgs&&... func_args)
       {
          std::vector<uint64_t> results{};
          if (has_events()) {
@@ -181,7 +184,7 @@ namespace bencher
                results.resize(linux_events<>::temp_result_vec.size());
             }
             linux_events<>::end(results);
-            count.cycles.emplace(results[0]);  // Use perf_event cycles (works on ARM64)
+            count.cycles.emplace(results[0]); // Use perf_event cycles (works on ARM64)
             count.instructions.emplace(results[1]);
             count.branches.emplace(results[2]);
             count.missed_branches.emplace(results[3]);

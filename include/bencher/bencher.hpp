@@ -91,12 +91,12 @@ namespace bencher
       // Calculate Median Absolute Deviation (MAD)
       inline double median_absolute_deviation(const std::vector<double>& data, double median_val)
       {
-          std::vector<double> deviations;
-          deviations.reserve(data.size());
-          for (const auto& val : data) {
-              deviations.emplace_back(std::abs(val - median_val));
-          }
-          return median(deviations);
+         std::vector<double> deviations;
+         deviations.reserve(data.size());
+         for (const auto& val : data) {
+            deviations.emplace_back(std::abs(val - median_val));
+         }
+         return median(deviations);
       }
 
       // Fixed z-score for 95% confidence
@@ -160,8 +160,7 @@ namespace bencher
       }
 
       template <class Function, class... Args>
-      const performance_metrics& run(const std::string_view subject_name, Function&& function,
-                                     Args&&... args)
+      const performance_metrics& run(const std::string_view subject_name, Function&& function, Args&&... args)
       {
          warmup();
 
@@ -169,7 +168,9 @@ namespace bencher
             throw std::invalid_argument("batch_size must be at least 1");
          }
          if (cold_cache && batch_size > 1) {
-            throw std::invalid_argument("cold_cache with batch_size > 1 is contradictory: only the first invocation in each batch sees a cold cache");
+            throw std::invalid_argument(
+               "cold_cache with batch_size > 1 is contradictory: only the first invocation in each batch sees a cold "
+               "cache");
          }
 
          event_collector collector{};
@@ -329,7 +330,9 @@ namespace bencher
             throw std::invalid_argument("batch_size must be at least 1");
          }
          if (cold_cache && batch_size > 1) {
-            throw std::invalid_argument("cold_cache with batch_size > 1 is contradictory: only the first invocation in each batch sees a cold cache");
+            throw std::invalid_argument(
+               "cold_cache with batch_size > 1 is contradictory: only the first invocation in each batch sees a cold "
+               "cache");
          }
 
          event_collector collector{};
@@ -359,9 +362,7 @@ namespace bencher
                auto state = setup();
 
                // Time only the benchmark function, passing the setup state
-               std::ignore = collector.start(events[i], [&]() {
-                  return function(state);
-               });
+               std::ignore = collector.start(events[i], [&]() { return function(state); });
             }
             else {
                // Pre-allocate fresh states (untimed), then time only the
@@ -419,7 +420,8 @@ namespace bencher
        *  Compute metrics for all runs from index 0..i (inclusive).
        *  So if i=10, we gather 11 runs in total.
        */
-      performance_metrics collect_metrics(const std::string_view subject_name, size_t i, const std::vector<double>& throughput_values)
+      performance_metrics collect_metrics(const std::string_view subject_name, size_t i,
+                                          const std::vector<double>& throughput_values)
       {
          performance_metrics pm{};
          pm.name = subject_name;
@@ -497,13 +499,13 @@ namespace bencher
          std::vector<double> pct_diffs;
          pct_diffs.reserve(run_count);
          for (const auto& throughput : throughput_values) {
-             if (median_throughput > 0.0) {
-                 double pct_diff = std::abs(throughput - median_throughput) / median_throughput * 100.0;
-                 pct_diffs.emplace_back(pct_diff);
-             }
-             else {
-                 pct_diffs.emplace_back(0.0);
-             }
+            if (median_throughput > 0.0) {
+               double pct_diff = std::abs(throughput - median_throughput) / median_throughput * 100.0;
+               pct_diffs.emplace_back(pct_diff);
+            }
+            else {
+               pct_diffs.emplace_back(0.0);
+            }
          }
          double mad = stats::median(pct_diffs);
          pm.throughput_median_percentage_deviation = mad;

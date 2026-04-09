@@ -2,8 +2,8 @@
 
 #include <array>
 
-#include "bencher/bencher.hpp"
 #include "bencher/bar_chart.hpp"
+#include "bencher/bencher.hpp"
 
 namespace bencher
 {
@@ -23,14 +23,14 @@ namespace bencher
       // Unicode block characters for smooth bar rendering (8 levels of precision)
       // Full block + 7 partial blocks from 7/8 down to 1/8
       constexpr std::array<std::string_view, 8> blocks = {
-         " ",        // 0/8 (empty - use space)
-         "\u258F",   // 1/8 ▏
-         "\u258E",   // 2/8 ▎
-         "\u258D",   // 3/8 ▍
-         "\u258C",   // 4/8 ▌
-         "\u258B",   // 5/8 ▋
-         "\u258A",   // 6/8 ▊
-         "\u2589",   // 7/8 ▉
+         " ", // 0/8 (empty - use space)
+         "\u258F", // 1/8 ▏
+         "\u258E", // 2/8 ▎
+         "\u258D", // 3/8 ▍
+         "\u258C", // 4/8 ▌
+         "\u258B", // 5/8 ▋
+         "\u258A", // 6/8 ▊
+         "\u2589", // 7/8 ▉
       };
       constexpr std::string_view full_block = "\u2588"; // █
 
@@ -180,8 +180,8 @@ namespace bencher
          }
          else {
             // Use user-specified baseline
-            baseline_it = std::find_if(metrics.begin(), metrics.end(),
-                                       [&](const auto& m) { return m.name == stage.baseline; });
+            baseline_it =
+               std::find_if(metrics.begin(), metrics.end(), [&](const auto& m) { return m.name == stage.baseline; });
             if (baseline_it == metrics.end()) {
                std::cerr << std::format("Warning: baseline '{}' not found, using slowest\n", stage.baseline);
                baseline_it = std::min_element(metrics.begin(), metrics.end(), [](const auto& a, const auto& b) {
@@ -286,8 +286,7 @@ namespace bencher
 
          markdown.append(format_metric(processed_label, value.bytes_processed));
          markdown.append(format_metric(throughput_label, value.throughput_mb_per_sec));
-         markdown.append(
-            format_metric("Throughput MAD (±%)", value.throughput_median_percentage_deviation));
+         markdown.append(format_metric("Throughput MAD (±%)", value.throughput_median_percentage_deviation));
          markdown.append(format_metric("Instructions per Execution", value.instructions_per_execution));
          markdown.append(
             format_metric("Instructions Percentage Deviation (±%)", value.instructions_percentage_deviation));

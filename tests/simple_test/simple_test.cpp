@@ -1,6 +1,6 @@
+#include "benchmark/bar_chart.hpp"
 #include "benchmark/benchmark.hpp"
 #include "benchmark/diagnostics.hpp"
-#include "benchmark/bar_chart.hpp"
 #include "benchmark/file.hpp"
 
 int main()
@@ -27,7 +27,7 @@ int main()
       }
       return 100000;
    });
-   
+
    stage.run("Truck", [] {
       double x{};
       for (size_t i = 0; i < 100000; ++i) {
@@ -38,9 +38,9 @@ int main()
    });
 
    bencher::print_results(stage);
-   
+
    bencher::save_file(bencher::to_markdown(stage), "results.md");
-   
+
    bencher::save_file(bencher::bar_chart(stage), "results.svg");
 
    return 0;

@@ -1,9 +1,10 @@
 // Glaze Library
 // For the license information refer to glaze.hpp
 
+#include "glaze/glaze.hpp"
+
 #include "benchmark/benchmark.hpp"
 #include "benchmark/diagnostics.hpp"
-#include "glaze/glaze.hpp"
 
 [[maybe_unused]] constexpr std::string_view json_whitespace = R"(
 {
@@ -39,7 +40,8 @@
 }
 )";
 
-[[maybe_unused]] constexpr std::string_view json_minified = R"({"fixed_object":{"int_array":[0,1,2,3,4,5,6],"float_array":[0.1,0.2,0.3,0.4,0.5,0.6],"double_array":[3288398.238,2.33e+24,28.9,0.928759872,0.22222848,0.1,0.2,0.3,0.4]},"fixed_name_object":{"name0":"James","name1":"Abraham","name2":"Susan","name3":"Frank","name4":"Alicia"},"another_object":{"string":"here is some text","another_string":"Hello World","escaped_text":"{\"some key\":\"some string value\"}","boolean":false,"nested_object":{"v3s":[[0.12345,0.23456,0.001345],[0.3894675,97.39827,297.92387],[18.18,87.289,2988.298]],"id":"298728949872"}},"string_array":["Cat","Dog","Elephant","Tiger"],"string":"Hello world","number":3.14,"boolean":true,"another_bool":false})";
+[[maybe_unused]] constexpr std::string_view json_minified =
+   R"({"fixed_object":{"int_array":[0,1,2,3,4,5,6],"float_array":[0.1,0.2,0.3,0.4,0.5,0.6],"double_array":[3288398.238,2.33e+24,28.9,0.928759872,0.22222848,0.1,0.2,0.3,0.4]},"fixed_name_object":{"name0":"James","name1":"Abraham","name2":"Susan","name3":"Frank","name4":"Alicia"},"another_object":{"string":"here is some text","another_string":"Hello World","escaped_text":"{\"some key\":\"some string value\"}","boolean":false,"nested_object":{"v3s":[[0.12345,0.23456,0.001345],[0.3894675,97.39827,297.92387],[18.18,87.289,2988.298]],"id":"298728949872"}},"string_array":["Cat","Dog","Elephant","Tiger"],"string":"Hello world","number":3.14,"boolean":true,"another_bool":false})";
 
 struct fixed_object_t
 {
@@ -87,9 +89,9 @@ struct obj_t
 int main()
 {
    std::string buffer{json_whitespace};
-   
+
    obj_t value{};
-   
+
    bencher::stage stage{"JSON benchmarks"};
    stage.run("JSON Read", [&] {
       auto ec = glz::read_json(value, buffer);
@@ -99,7 +101,7 @@ int main()
       bencher::do_not_optimize(value);
       return buffer.size();
    });
-   
+
    stage.run("JSON Write", [&] {
       auto ec = glz::write_json(value, buffer);
       if (ec) {
@@ -110,10 +112,10 @@ int main()
    });
 
    bencher::print_results(stage);
-   
+
    bencher::save_file(bencher::to_markdown(stage), "results.md");
-   
+
    bencher::save_file(bencher::bar_chart(stage), "results.svg");
-   
+
    return 0;
 }

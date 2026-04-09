@@ -26,7 +26,8 @@ namespace bencher
       }
 
       template <class Function, class... FuncArgs>
-      [[nodiscard]] BENCH_ALWAYS_INLINE std::error_condition start(event_count& count, Function&& function, FuncArgs&&... func_args)
+      [[nodiscard]] BENCH_ALWAYS_INLINE std::error_condition start(event_count& count, Function&& function,
+                                                                   FuncArgs&&... func_args)
       {
          const auto start_clock = std::chrono::steady_clock::now();
          volatile uint64_t cycleStart = rdtsc();

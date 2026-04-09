@@ -16,10 +16,7 @@ namespace bencher
 {
    struct event_count
    {
-      double elapsed_ns() const noexcept
-      {
-         return std::chrono::duration<double, std::nano>(elapsed).count();
-      }
+      double elapsed_ns() const noexcept { return std::chrono::duration<double, std::nano>(elapsed).count(); }
 
       std::optional<uint64_t> missed_branches{};
       uint64_t bytes_processed{};

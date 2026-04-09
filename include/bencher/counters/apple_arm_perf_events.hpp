@@ -526,10 +526,7 @@ namespace bencher
 
       event_collector_type() { setup_performance_counters(); }
 
-      [[nodiscard]] std::error_condition error()
-      {
-         return setup_performance_counters();
-      }
+      [[nodiscard]] std::error_condition error() { return setup_performance_counters(); }
 
       template <class Function, class... Args>
       [[nodiscard]] std::error_condition start(EventCount& count, Function&& function, Args&&... args)

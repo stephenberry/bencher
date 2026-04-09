@@ -1,8 +1,7 @@
-#include "bencher/bencher.hpp"
 #include "bencher/bar_chart.hpp"
+#include "bencher/bencher.hpp"
 #include "bencher/diagnostics.hpp"
 #include "bencher/file.hpp"
-
 #include "ut/ut.hpp"
 
 using namespace ut;
@@ -138,13 +137,15 @@ suite stage_tests = [] {
       stage.min_execution_count = 5;
       stage.max_execution_count = 10;
 
-      stage.run_with("work", [](size_t n) {
-         volatile size_t sum = 0;
-         for (size_t i = 0; i < n; ++i) {
-            sum += i;
-         }
-         return n * sizeof(size_t);
-      }, {10, 100, 1000});
+      stage.run_with("work",
+                     [](size_t n) {
+                        volatile size_t sum = 0;
+                        for (size_t i = 0; i < n; ++i) {
+                           sum += i;
+                        }
+                        return n * sizeof(size_t);
+                     },
+                     {10, 100, 1000});
 
       expect(stage.results.size() == 3u);
       expect(stage.results[0].name == "work/10");
@@ -163,11 +164,14 @@ suite stage_tests = [] {
       stage.max_execution_count = 10;
 
       std::vector<int> params = {5, 10, 15};
-      stage.run_with("compute", [](int n) {
-         volatile int result = n * n;
-         bencher::do_not_optimize(result);
-         return sizeof(int);
-      }, params);
+      stage.run_with(
+         "compute",
+         [](int n) {
+            volatile int result = n * n;
+            bencher::do_not_optimize(result);
+            return sizeof(int);
+         },
+         params);
 
       expect(stage.results.size() == 3u);
       expect(stage.results[0].name == "compute/5");
@@ -179,8 +183,11 @@ suite stage_tests = [] {
       bencher::stage stage{"setup_test"};
       stage.min_execution_count = 5;
       stage.max_execution_count = 10;
+      stage.batch_size = 64; // 5-element sort is below timer granularity
+      stage.cold_cache = false;
 
-      const auto& metrics = stage.run_with_setup("sort",
+      const auto& metrics = stage.run_with_setup(
+         "sort",
          [] {
             // Setup: create unsorted data (untimed)
             std::vector<int> data = {5, 3, 1, 4, 2};
@@ -190,8 +197,7 @@ suite stage_tests = [] {
             // Benchmark: sort the data (timed)
             std::sort(data.begin(), data.end());
             return data.size() * sizeof(int);
-         }
-      );
+         });
 
       expect(metrics.name == "sort");
       expect(metrics.throughput_mb_per_sec > 0.0);
@@ -209,7 +215,8 @@ suite stage_tests = [] {
       // Track how many times setup is called
       int setup_count = 0;
 
-      stage.run_with_setup("counter",
+      stage.run_with_setup(
+         "counter",
          [&setup_count] {
             setup_count++;
             return std::vector<int>{1, 2, 3};
@@ -218,8 +225,7 @@ suite stage_tests = [] {
             // Modify data to verify we get fresh state each time
             data.clear();
             return sizeof(int);
-         }
-      );
+         });
 
       // Setup should be called at least min_execution_count times
       expect(setup_count >= 5);
@@ -230,21 +236,19 @@ suite stage_tests = [] {
       stage.min_execution_count = 5;
       stage.max_execution_count = 10;
 
-      stage.run_with_setup("sort_asc",
-         [] { return std::vector<int>{5, 3, 1, 4, 2}; },
+      stage.run_with_setup(
+         "sort_asc", [] { return std::vector<int>{5, 3, 1, 4, 2}; },
          [](auto& data) {
             std::sort(data.begin(), data.end());
             return data.size() * sizeof(int);
-         }
-      );
+         });
 
-      stage.run_with_setup("sort_desc",
-         [] { return std::vector<int>{5, 3, 1, 4, 2}; },
+      stage.run_with_setup(
+         "sort_desc", [] { return std::vector<int>{5, 3, 1, 4, 2}; },
          [](auto& data) {
             std::sort(data.begin(), data.end(), std::greater<int>());
             return data.size() * sizeof(int);
-         }
-      );
+         });
 
       expect(stage.results.size() == 2u);
       expect(stage.results[0].name == "sort_asc");
@@ -266,7 +270,7 @@ suite stage_tests = [] {
 
       expect(metrics.name == "void_bench");
       expect(metrics.bytes_processed.has_value());
-      expect(metrics.bytes_processed.value() == 0.0);  // Default 0 bytes for void
+      expect(metrics.bytes_processed.value() == 0.0); // Default 0 bytes for void
       expect(metrics.total_iteration_count.has_value());
       expect(metrics.total_iteration_count.value() >= 5u);
       // Throughput will be 0 since bytes_processed is 0
@@ -282,7 +286,7 @@ suite stage_tests = [] {
       stage.run("with_bytes", [] {
          volatile int x = 42;
          bencher::do_not_optimize(x);
-         return 100;  // 100 bytes
+         return 100; // 100 bytes
       });
 
       // Second benchmark is void

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "bencher/config.hpp"
-
 #include <concepts>
+
+#include "bencher/config.hpp"
 
 namespace bencher
 {
