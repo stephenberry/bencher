@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+namespace bencher
+{
+
 struct line_series
 {
    std::string name;
@@ -284,3 +287,5 @@ inline std::string generate_line_chart_svg(const std::vector<std::string>& x_lab
    svg += "</svg>\n";
    return svg;
 }
+
+} // namespace bencher

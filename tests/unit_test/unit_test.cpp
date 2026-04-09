@@ -323,36 +323,36 @@ suite performance_metrics_tests = [] {
 };
 
 suite bar_chart_tests = [] {
-   "hex_to_rgb"_test = [] {
-      auto rgb = hex_to_rgb("#FF0000");
+   "bencher::hex_to_rgb"_test = [] {
+      auto rgb = bencher::hex_to_rgb("#FF0000");
       expect(rgb.r == 255);
       expect(rgb.g == 0);
       expect(rgb.b == 0);
    };
 
-   "hex_to_rgb_green"_test = [] {
-      auto rgb = hex_to_rgb("#00FF00");
+   "bencher::hex_to_rgb_green"_test = [] {
+      auto rgb = bencher::hex_to_rgb("#00FF00");
       expect(rgb.r == 0);
       expect(rgb.g == 255);
       expect(rgb.b == 0);
    };
 
-   "hex_to_rgb_blue"_test = [] {
-      auto rgb = hex_to_rgb("#0000FF");
+   "bencher::hex_to_rgb_blue"_test = [] {
+      auto rgb = bencher::hex_to_rgb("#0000FF");
       expect(rgb.r == 0);
       expect(rgb.g == 0);
       expect(rgb.b == 255);
    };
 
    "rgb_to_hex"_test = [] {
-      RGB color{255, 128, 64};
+      bencher::RGB color{255, 128, 64};
       auto hex = rgb_to_hex(color);
       expect(hex == "#FF8040");
    };
 
-   "darken_color"_test = [] {
-      auto darkened = darken_color("#FFFFFF", 0.5);
-      auto rgb = hex_to_rgb(darkened);
+   "bencher::darken_color"_test = [] {
+      auto darkened = bencher::darken_color("#FFFFFF", 0.5);
+      auto rgb = bencher::hex_to_rgb(darkened);
       expect(rgb.r == 127);
       expect(rgb.g == 127);
       expect(rgb.b == 127);
@@ -361,9 +361,9 @@ suite bar_chart_tests = [] {
    "generate_bar_chart_basic"_test = [] {
       std::vector<std::string> names = {"A", "B", "C"};
       std::vector<double> data = {100.0, 200.0, 150.0};
-      chart_config cfg;
+      bencher::chart_config cfg;
 
-      auto svg = generate_bar_chart_svg(names, data, cfg);
+      auto svg = bencher::generate_bar_chart_svg(names, data, cfg);
 
       expect(svg.find("<svg") != std::string::npos);
       expect(svg.find("</svg>") != std::string::npos);
@@ -372,8 +372,8 @@ suite bar_chart_tests = [] {
       expect(svg.find("C") != std::string::npos);
    };
 
-   "chart_config_defaults"_test = [] {
-      chart_config cfg;
+   "bencher::chart_config_defaults"_test = [] {
+      bencher::chart_config cfg;
       expect(cfg.chart_width == 1000.0);
       expect(cfg.chart_height == 600.0);
       expect(cfg.y_axis_label == "MB/s");
@@ -381,8 +381,8 @@ suite bar_chart_tests = [] {
    };
 
    "themes_available"_test = [] {
-      expect(themes::bright.size() == 10u);
-      expect(themes::dark.size() == 10u);
+      expect(bencher::themes::bright.size() == 10u);
+      expect(bencher::themes::dark.size() == 10u);
    };
 };
 

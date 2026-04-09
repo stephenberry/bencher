@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+namespace bencher
+{
+
 struct RGB
 {
    int r{};
@@ -313,3 +316,5 @@ inline std::string generate_bar_chart_svg(const std::vector<std::string>& names,
 
    return svg;
 }
+
+} // namespace bencher

@@ -120,6 +120,15 @@ namespace bencher
       // Set to false for warm-cache (steady-state) benchmarks
       bool cold_cache = true;
 
+      // Number of function invocations per timed iteration. Increase for
+      // sub-microsecond operations where timer granularity (e.g. ~42 ns on
+      // Apple Silicon) causes severe quantization noise or zero-elapsed reads.
+      // For run_with_setup, fresh states are pre-allocated before the timed loop.
+      // Note: batched measurements reflect warm-icache/branch-predictor throughput
+      // since only the first invocation in each batch runs cold.
+      // Default of 1 preserves single-shot behavior.
+      size_t batch_size = 1;
+
       // Baseline for comparison (empty string means compare to slowest)
       std::string baseline{};
 
@@ -156,6 +165,13 @@ namespace bencher
       {
          warmup();
 
+         if (batch_size == 0) {
+            throw std::invalid_argument("batch_size must be at least 1");
+         }
+         if (cold_cache && batch_size > 1) {
+            throw std::invalid_argument("cold_cache with batch_size > 1 is contradictory: only the first invocation in each batch sees a cold cache");
+         }
+
          event_collector collector{};
 
          if (auto ec = collector.error()) {
@@ -185,7 +201,38 @@ namespace bencher
                cache_clearer::evict_l1_cache();
             }
 
-            std::ignore = collector.start(events[i], function, args...);
+            if (batch_size <= 1) {
+               std::ignore = collector.start(events[i], function, args...);
+            }
+            else {
+               // Batch multiple invocations into a single timing window to
+               // amortize timer granularity for very fast operations.
+               if constexpr (std::is_void_v<std::invoke_result_t<Function, Args...>>) {
+                  std::ignore = collector.start(events[i], [&]() {
+                     for (size_t b = 0; b < batch_size; ++b) {
+                        function(args...);
+                     }
+                  });
+               }
+               else {
+                  // bytes_processed comes from the last invocation, which is
+                  // intentionally per-invocation (not cumulative) since elapsed
+                  // and counters are also divided by batch_size below.
+                  std::ignore = collector.start(events[i], [&]() -> uint64_t {
+                     uint64_t result = 0;
+                     for (size_t b = 0; b < batch_size; ++b) {
+                        result = function(args...);
+                     }
+                     return result;
+                  });
+               }
+               // Convert totals to per-invocation values
+               events[i].elapsed /= batch_size;
+               if (events[i].cycles) *events[i].cycles /= batch_size;
+               if (events[i].instructions) *events[i].instructions /= batch_size;
+               if (events[i].branches) *events[i].branches /= batch_size;
+               if (events[i].missed_branches) *events[i].missed_branches /= batch_size;
+            }
 
             // For a single run:
             double run_ns = events[i].elapsed_ns();
@@ -278,6 +325,13 @@ namespace bencher
       {
          warmup();
 
+         if (batch_size == 0) {
+            throw std::invalid_argument("batch_size must be at least 1");
+         }
+         if (cold_cache && batch_size > 1) {
+            throw std::invalid_argument("cold_cache with batch_size > 1 is contradictory: only the first invocation in each batch sees a cold cache");
+         }
+
          event_collector collector{};
 
          if (auto ec = collector.error()) {
@@ -300,13 +354,39 @@ namespace bencher
                cache_clearer::evict_l1_cache();
             }
 
-            // Call setup before timing starts (untimed)
-            auto state = setup();
+            if (batch_size <= 1) {
+               // Call setup before timing starts (untimed)
+               auto state = setup();
 
-            // Time only the benchmark function, passing the setup state
-            std::ignore = collector.start(events[i], [&]() {
-               return function(state);
-            });
+               // Time only the benchmark function, passing the setup state
+               std::ignore = collector.start(events[i], [&]() {
+                  return function(state);
+               });
+            }
+            else {
+               // Pre-allocate fresh states (untimed), then time only the
+               // function calls to amortize timer granularity.
+               using State = decltype(setup());
+               std::vector<State> states;
+               states.reserve(batch_size);
+               for (size_t b = 0; b < batch_size; ++b) states.emplace_back(setup());
+
+               // bytes_processed is intentionally per-invocation (not cumulative)
+               // since elapsed and counters are also divided by batch_size below.
+               std::ignore = collector.start(events[i], [&]() -> uint64_t {
+                  uint64_t result = 0;
+                  for (auto& s : states) {
+                     result = function(s);
+                  }
+                  return result;
+               });
+               // Convert totals to per-invocation values
+               events[i].elapsed /= batch_size;
+               if (events[i].cycles) *events[i].cycles /= batch_size;
+               if (events[i].instructions) *events[i].instructions /= batch_size;
+               if (events[i].branches) *events[i].branches /= batch_size;
+               if (events[i].missed_branches) *events[i].missed_branches /= batch_size;
+            }
 
             double run_ns = events[i].elapsed_ns();
             bytes_processed = static_cast<double>(events[i].bytes_processed);
@@ -346,7 +426,9 @@ namespace bencher
 
          // The total number of completed runs so far is i + 1
          size_t run_count = i + 1;
-         assert(run_count <= events.size() && "run_count exceeds events.size()");
+         if (run_count > events.size()) {
+            throw std::out_of_range("run_count exceeds events.size()");
+         }
 
          pm.total_iteration_count = run_count;
 

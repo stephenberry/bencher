@@ -79,6 +79,8 @@ struct stage {
    uint64_t min_execution_count = 30;            // Minimum iterations before checking CI
    uint64_t max_execution_count = 1000;          // Maximum iterations
    double confidence_interval_threshold = 2.0;   // Target CI threshold (±%)
+   bool cold_cache = true;                       // Evict L1 cache between iterations
+   size_t batch_size = 1;                        // Invocations per timed iteration (see below)
    std::string baseline{};                       // Baseline for comparison (empty = slowest)
    double throughput_units_divisor = 1024 * 1024; // Units divisor (default MB/s)
    std::string throughput_units_label = "MB/s";  // Label for throughput unit
@@ -203,6 +205,30 @@ stage.run("search", [&] {
    return data.size() * sizeof(int);
 });
 ```
+
+### Batching for Sub-Microsecond Operations
+
+On platforms with coarse timer granularity (e.g. Apple Silicon's 24 MHz hardware timer, ~42 ns per tick), operations faster than ~1 microsecond suffer severe quantization noise or may report zero elapsed time. Set `batch_size` to run multiple invocations per timed iteration:
+
+```cpp
+bencher::stage stage{"Tiny Sort"};
+stage.batch_size = 128;  // 128 invocations per timed iteration
+stage.cold_cache = false; // Required: cold_cache is incompatible with batch_size > 1
+
+stage.run_with_setup("sort 10 elements",
+   [] { return generate_random_data(10); },
+   [](auto& data) {
+      std::sort(data.begin(), data.end());
+      return data.size() * sizeof(int);
+   }
+);
+```
+
+For `run_with_setup`, fresh states are pre-allocated before the timed loop so setup cost is excluded. For `run`, the function is called repeatedly in a tight loop.
+
+Elapsed time and all hardware counters (cycles, instructions, branches) are divided by `batch_size` to produce per-invocation metrics.
+
+Note that batched measurements reflect warm-icache/branch-predictor throughput since only the first invocation in each batch runs cold.
 
 ### `bencher::do_not_optimize`
 
