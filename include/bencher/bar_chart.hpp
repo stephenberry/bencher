@@ -194,9 +194,9 @@ namespace bencher
 
       // Start SVG element with responsive viewBox
       svg += std::format(
-         "<svg width=\"{}\" height=\"{}\" viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\" "
+         "<svg viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\" "
          "version=\"1.1\">\n",
-         cfg.chart_width, cfg.chart_height, static_cast<int>(cfg.chart_width), static_cast<int>(cfg.chart_height));
+         static_cast<int>(cfg.chart_width), static_cast<int>(cfg.chart_height));
 
       // Background rectangle
       svg += std::format("  <rect width=\"100%\" height=\"100%\" fill=\"{}\"/>\n", cfg.background_color);
