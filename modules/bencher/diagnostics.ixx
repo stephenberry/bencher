@@ -1,13 +1,16 @@
-#pragma once
+// diagnostics.ixx
+export module bencher.diagnostics;
 
-#include <array>
+import std;
 
-#include "bencher/bar_chart.hpp"
-#include "bencher/bencher.hpp"
+import bencher;
+import bencher.bar_chart;
+
+using std::size_t;
 
 namespace bencher
 {
-   inline std::string format_bar_chart(const std::vector<std::string>& names, const std::vector<double>& values)
+   export inline std::string format_bar_chart(const std::vector<std::string>& names, const std::vector<double>& values)
    {
       // Validate input sizes
       if (names.size() != values.size() || names.empty()) {
@@ -87,7 +90,7 @@ namespace bencher
       std::cout << format_bar_chart(names, values);
    }
 
-   inline std::string bar_chart(const bencher::stage& stage, chart_config cfg = {})
+   export inline std::string bar_chart(const bencher::stage& stage, chart_config cfg = {})
    {
       const auto& results = stage.results;
       std::vector<std::string> names;
@@ -226,7 +229,7 @@ namespace bencher
       }
    }
 
-   inline std::string to_markdown(const bencher::stage& stage)
+   export inline std::string to_markdown(const bencher::stage& stage)
    {
       std::vector<performance_metrics> metrics = stage.results;
       std::sort(metrics.begin(), metrics.end(), std::greater<performance_metrics>{});

@@ -1,10 +1,13 @@
-#pragma once
+// json.ixx
+export module bencher.json;
 
-#if __has_include(<glaze/glaze.hpp>)
+#ifdef BENCHER_ENABLE_JSON
 
-#include <glaze/glaze.hpp>
+import std;
 
-#include "bencher/bencher.hpp"
+import bencher;
+
+import glaze;
 
 namespace bencher
 {
@@ -14,17 +17,16 @@ namespace bencher
       std::vector<performance_metrics> results{};
    };
 
-   [[nodiscard]] inline std::string to_json(const stage& s)
+   export [[nodiscard]] inline std::string to_json(const stage& s)
    {
       stage_result output{s.name, s.results};
       return glz::write_json(output).value_or("{}");
    }
 
-   [[nodiscard]] inline std::string to_json_pretty(const stage& s)
+   export [[nodiscard]] inline std::string to_json_pretty(const stage& s)
    {
       stage_result output{s.name, s.results};
       return glz::write<glz::opts{.prettify = true}>(output).value_or("{}");
    }
 }
-
 #endif

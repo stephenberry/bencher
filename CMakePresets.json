@@ -1,0 +1,82 @@
+{
+  "version": 9,
+  "configurePresets": [
+    {
+      "name": "windows-base-vs",
+      "hidden": true,
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "x64",
+      "inherits": "windows-base-vs",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
+      "name": "linux",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
+      "name": "macos",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x64-build",
+      "configurePreset": "x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-build",
+      "configurePreset": "linux"
+    },
+    {
+      "name": "macos-build",
+      "configurePreset": "macos"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "x64-test",
+      "configurePreset": "x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-test",
+      "configurePreset": "linux"
+    },
+    {
+      "name": "macos-test",
+      "configurePreset": "macos"
+    }
+  ]
+}

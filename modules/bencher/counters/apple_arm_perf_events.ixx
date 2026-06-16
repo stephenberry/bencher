@@ -1,24 +1,22 @@
-#pragma once
-
+// apple_arm_perf_events.ixx
+module;
 #include "bencher/config.hpp"
 
-#if defined(BENCH_MAC)
-
+#ifdef BENCH_MAC
 #include <dlfcn.h>
 #include <mach/mach_time.h>
 #include <sys/kdebug.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#endif 
+export module bencher.counters.apple;
+#if defined(BENCH_MAC)
 
-#include <array>
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-#include <system_error>
-#include <type_traits>
-#include <utility>
+using std::size_t;
+using std::int32_t;
+using std::uint32_t;
+
+import std;
 
 // -----------------------------------------------------------------------------
 /** Customize error handling **/
@@ -134,7 +132,7 @@ namespace bencher
    inline constexpr uint32_t KPC_CLASS_RAWPMU_MASK = 1u << KPC_CLASS_RAWPMU;
 
    inline constexpr size_t KPC_MAX_COUNTERS = 32;
-   using kpc_config_t = uint64_t;
+   using kpc_config_t = std::uint64_t;
 
    // -----------------------------------------------------------------------------
    // Used kperf function pointers
@@ -145,7 +143,7 @@ namespace bencher
    inline int32_t (*kpc_set_config)(uint32_t classes, kpc_config_t* config) = nullptr;
    inline int32_t (*kpc_set_counting)(uint32_t classes) = nullptr;
    inline int32_t (*kpc_set_thread_counting)(uint32_t classes) = nullptr;
-   inline int32_t (*kpc_get_thread_counters)(uint32_t tid, uint32_t buf_count, uint64_t* buf) = nullptr;
+   inline int32_t (*kpc_get_thread_counters)(uint32_t tid, uint32_t buf_count, std::uint64_t* buf) = nullptr;
 
    // -----------------------------------------------------------------------------
    // Used kperfdata (kpep) function pointers and structures
@@ -197,7 +195,7 @@ namespace bencher
       size_t* ev_map;
       size_t* ev_idx;
       uint32_t* flags;
-      uint64_t* kpc_periods;
+      std::uint64_t* kpc_periods;
       size_t event_count;
       size_t counter_count;
       uint32_t classes;
@@ -376,8 +374,8 @@ namespace bencher
 
    inline std::array<kpc_config_t, KPC_MAX_COUNTERS> regs{};
    inline std::array<size_t, KPC_MAX_COUNTERS> counter_map{};
-   inline std::array<uint64_t, KPC_MAX_COUNTERS> counters_0{};
-   inline std::array<uint64_t, KPC_MAX_COUNTERS> counters_1{};
+   inline std::array<std::uint64_t, KPC_MAX_COUNTERS> counters_0{};
+   inline std::array<std::uint64_t, KPC_MAX_COUNTERS> counters_1{};
    inline constexpr size_t ev_count = profile_events.size();
 
    inline std::error_condition setup_performance_counters()
@@ -519,7 +517,7 @@ namespace bencher
    }
 
    // Example collector for benchmarking
-   template <class EventCount>
+   export template <class EventCount>
    struct event_collector_type
    {
       performance_counters diff{};

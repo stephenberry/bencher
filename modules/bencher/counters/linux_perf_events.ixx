@@ -1,22 +1,23 @@
-#pragma once
+// linux_perf_events.ixx
+module;
 
 #include "bencher/config.hpp"
 
-#if defined(BENCH_LINUX)
-
+#ifdef BENCH_LINUX
+#include <cerrno>
 #include <asm/unistd.h>
 #include <libgen.h>
 #include <linux/perf_event.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#endif
+export module bencher.counters.linux_perf_events;
+#if defined(BENCH_LINUX)
 
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
-#include <system_error>
-#include <type_traits>
-#include <vector>
+import std;
+
+using std::uint32_t;
+using std::int32_t;
 
 namespace bencher
 {
@@ -40,8 +41,8 @@ namespace bencher
    class linux_events
    {
      protected:
-      std::vector<uint64_t> temp_result_vec{};
-      std::vector<uint64_t> ids{};
+      std::vector<std::uint64_t> temp_result_vec{};
+      std::vector<std::uint64_t> ids{};
       std::vector<int32_t> fds{}; // All file descriptors
       perf_event_attr attribs{};
       bool working{true};
@@ -52,7 +53,7 @@ namespace bencher
      public:
       linux_events(std::vector<int32_t> config_vec)
       {
-         memset(&attribs, 0, sizeof(attribs));
+         std::memset(&attribs, 0, sizeof(attribs));
          attribs.type = TYPE;
          attribs.size = sizeof(attribs);
          attribs.disabled = 1;
@@ -109,7 +110,7 @@ namespace bencher
          }
       }
 
-      BENCH_ALWAYS_INLINE void end(std::vector<uint64_t>& results)
+      BENCH_ALWAYS_INLINE void end(std::vector<std::uint64_t>& results)
       {
          if (fd != -1) {
             if (ioctl(fd, PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP) == -1) {
@@ -141,7 +142,7 @@ namespace bencher
       }
    };
 
-   template <class event_count>
+   export template <class event_count>
    struct event_collector_type : public linux_events<>
    {
       event_collector_type()
@@ -163,12 +164,12 @@ namespace bencher
       [[nodiscard]] BENCH_ALWAYS_INLINE std::error_condition start(event_count& count, Function&& function,
                                                                    FuncArgs&&... func_args)
       {
-         std::vector<uint64_t> results{};
+         std::vector<std::uint64_t> results{};
          if (has_events()) {
             linux_events<>::start();
          }
          const auto start_clock = std::chrono::steady_clock::now();
-         volatile uint64_t cycleStart = rdtsc();
+         volatile std::uint64_t cycleStart = rdtsc();
          if constexpr (std::is_void_v<std::invoke_result_t<Function, FuncArgs...>>) {
             std::forward<Function>(function)(std::forward<FuncArgs>(func_args)...);
             count.bytes_processed = 0;
@@ -176,7 +177,7 @@ namespace bencher
          else {
             count.bytes_processed = std::forward<Function>(function)(std::forward<FuncArgs>(func_args)...);
          }
-         volatile uint64_t cycleEnd = rdtsc();
+         volatile std::uint64_t cycleEnd = rdtsc();
          const auto end_clock = std::chrono::steady_clock::now();
          count.elapsed = end_clock - start_clock;
          if (has_events()) {

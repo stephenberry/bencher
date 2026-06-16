@@ -1,14 +1,11 @@
-#pragma once
+// radar_chart.ixx
+export module bencher.radar_chart;
 
-#include <algorithm>
-#include <cmath>
-#include <format>
-#include <numbers>
-#include <stdexcept>
-#include <string>
-#include <vector>
+import std;
 
-#include "bar_chart.hpp" // xml_escape, themes, RGB
+import bencher.bar_chart;
+
+using std::size_t;
 
 namespace bencher
 {

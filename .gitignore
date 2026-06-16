@@ -46,3 +46,5 @@ $RECYCLE.BIN/
 ehthumbs.db
 Thumbs.db
 *.json
+!CMakePresets.json
+/vc140.pdb

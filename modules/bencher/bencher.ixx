@@ -1,28 +1,20 @@
-#pragma once
-
-#include <algorithm>
-#include <cassert>
-#include <chrono>
-#include <cmath>
-#include <concepts>
-#include <format>
-#include <iostream>
-#include <numeric>
-#include <optional>
-#include <ranges>
-#include <string>
-#include <string_view>
-#include <vector>
-
-#include "bencher/cache_clearer.hpp"
+// bencher.ixx
+module;
 #include "bencher/config.hpp"
-#include "bencher/do_not_optimize.hpp"
-#include "bencher/event_counter.hpp"
-#include "bencher/file.hpp"
+export module bencher;
+
+import std;
+
+export import bencher.cache_clearer;
+export import bencher.do_not_optimize;
+export import bencher.event_counter;
+export import bencher.file;
+
+using std::size_t;
 
 namespace bencher
 {
-   struct performance_metrics
+   export struct performance_metrics
    {
       // Throughput in units/sec (defaults to MB/s when stage uses bytes + 1024^2 divisor)
       double throughput_mb_per_sec{};
@@ -32,7 +24,7 @@ namespace bencher
       std::optional<double> cycles_percentage_deviation;
       std::optional<double> instructions_per_execution;
       std::optional<double> branch_misses_per_execution;
-      std::optional<uint64_t> total_iteration_count;
+      std::optional<std::uint64_t> total_iteration_count;
       std::optional<double> instructions_per_cycle;
       std::optional<double> branches_per_execution;
       std::optional<double> instructions_per_byte;
@@ -52,14 +44,14 @@ namespace bencher
    namespace stats
    {
       // Calculate mean of a vector of doubles
-      inline double mean(const std::vector<double>& data)
+      export inline double mean(const std::vector<double>& data)
       {
          if (data.empty()) throw std::invalid_argument("Data vector is empty.");
          double sum = std::accumulate(data.begin(), data.end(), 0.0);
          return sum / double(data.size());
       }
 
-      inline double median(std::vector<double> data)
+      export inline double median(std::vector<double> data)
       {
          if (data.empty()) throw std::invalid_argument("Data vector is empty.");
          size_t n = data.size();
@@ -77,7 +69,7 @@ namespace bencher
          }
       }
 
-      inline double standard_deviation(const std::vector<double>& data, double mean_val)
+      export inline double standard_deviation(const std::vector<double>& data, double mean_val)
       {
          if (data.size() < 2) throw std::invalid_argument("At least two data points are required.");
          double accum = 0.0;
@@ -89,7 +81,7 @@ namespace bencher
       }
 
       // Calculate Median Absolute Deviation (MAD)
-      inline double median_absolute_deviation(const std::vector<double>& data, double median_val)
+      export inline double median_absolute_deviation(const std::vector<double>& data, double median_val)
       {
          std::vector<double> deviations;
          deviations.reserve(data.size());
@@ -103,18 +95,18 @@ namespace bencher
       constexpr double z_score_95 = 1.96;
    }
 
-   struct stage
+   export struct stage
    {
       std::string name{};
-      uint64_t min_execution_count = 30;
-      uint64_t max_execution_count = 1000;
+      std::uint64_t min_execution_count = 30;
+      std::uint64_t max_execution_count = 1000;
 
       // Threshold for relative half-width of 95% CI, e.g. 2.0% means we stop
       // once the ±CI is within ±2% of the mean throughput.
       double confidence_interval_threshold = 2.0;
 
       // Warmup duration in milliseconds to stabilize CPU frequency
-      uint32_t warmup_duration_ms = 1000;
+      std::uint32_t warmup_duration_ms = 1000;
 
       // If true, evict L1 cache between runs for cold-cache measurements
       // Set to false for warm-cache (steady-state) benchmarks
@@ -219,8 +211,8 @@ namespace bencher
                   // bytes_processed comes from the last invocation, which is
                   // intentionally per-invocation (not cumulative) since elapsed
                   // and counters are also divided by batch_size below.
-                  std::ignore = collector.start(events[i], [&]() -> uint64_t {
-                     uint64_t result = 0;
+                  std::ignore = collector.start(events[i], [&]() -> std::uint64_t {
+                     std::uint64_t result = 0;
                      for (size_t b = 0; b < batch_size; ++b) {
                         result = function(args...);
                      }
@@ -374,8 +366,8 @@ namespace bencher
 
                // bytes_processed is intentionally per-invocation (not cumulative)
                // since elapsed and counters are also divided by batch_size below.
-               std::ignore = collector.start(events[i], [&]() -> uint64_t {
-                  uint64_t result = 0;
+               std::ignore = collector.start(events[i], [&]() -> std::uint64_t {
+                  std::uint64_t result = 0;
                   for (auto& s : states) {
                      result = function(s);
                   }

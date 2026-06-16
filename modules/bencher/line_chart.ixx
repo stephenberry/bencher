@@ -1,11 +1,11 @@
-#pragma once
+// line_chart.ixx
+export module bencher.line_chart;
 
-#include <cmath>
-#include <format>
-#include <string>
-#include <vector>
+import std;
 
-#include "bar_chart.hpp" // Reuse chart_config, color utilities, themes
+import bencher.bar_chart;
+
+using std::size_t;
 
 namespace bencher
 {

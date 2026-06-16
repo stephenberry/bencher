@@ -1,16 +1,14 @@
-#pragma once
+// bar_chart.ixx
+export module bencher.bar_chart;
 
-#include <algorithm>
-#include <charconv>
-#include <format>
-#include <stdexcept> // For exception handling
-#include <string>
-#include <vector>
+import std;
+
+using std::size_t;
 
 namespace bencher
 {
 
-   struct RGB
+   export struct RGB
    {
       int r{};
       int g{};
@@ -18,7 +16,7 @@ namespace bencher
    };
 
    // Utility function to convert hex color string to RGB components
-   inline RGB hex_to_rgb(const std::string& hex)
+   export inline RGB hex_to_rgb(const std::string& hex)
    {
       RGB color{0, 0, 0};
 
@@ -45,13 +43,13 @@ namespace bencher
    }
 
    // Utility function to convert RGB components back to hex color
-   inline std::string rgb_to_hex(const RGB& color)
+   export inline std::string rgb_to_hex(const RGB& color)
    {
       return std::format("#{0:02X}{1:02X}{2:02X}", color.r & 0xFF, color.g & 0xFF, color.b & 0xFF);
    }
 
    // Utility function to darken a color by a certain percentage
-   inline std::string darken_color(const std::string& hex, double percentage)
+   export inline std::string darken_color(const std::string& hex, double percentage)
    {
       RGB color = hex_to_rgb(hex);
 
@@ -68,7 +66,7 @@ namespace bencher
       return rgb_to_hex(color);
    }
 
-   namespace themes
+   export namespace themes
    {
       inline std::vector<std::string> bright = {
          "#4CAF50", // Green
@@ -97,7 +95,7 @@ namespace bencher
       };
    }
 
-   inline std::string xml_escape(const std::string& s)
+   export inline std::string xml_escape(const std::string& s)
    {
       std::string result;
       result.reserve(s.size());
@@ -125,7 +123,7 @@ namespace bencher
       return result;
    }
 
-   struct chart_config
+   export struct chart_config
    {
       double chart_width = 1000;
       double chart_height = 600;
@@ -148,7 +146,7 @@ namespace bencher
       std::string background_color = "#FFFFFF"; // Background color for the chart
    };
 
-   inline std::string generate_bar_chart_svg(const std::vector<std::string>& names, const std::vector<double>& data,
+   export inline std::string generate_bar_chart_svg(const std::vector<std::string>& names, const std::vector<double>& data,
                                              const chart_config& cfg)
    {
       // Ensure both vectors have the same size

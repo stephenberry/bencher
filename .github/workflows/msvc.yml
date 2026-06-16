@@ -1,0 +1,28 @@
+name: MSVC
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  msvc:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - configure_preset: "x64"
+            build_preset: "x64-build"
+            test_preset: "x64-test"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "Build & Test"
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: ${{ matrix.preset.configure_preset }}
+          buildPreset: ${{ matrix.preset.build_preset }}
+          testPreset: ${{ matrix.preset.test_preset }}

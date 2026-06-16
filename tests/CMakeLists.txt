@@ -7,6 +7,8 @@ FetchContent_Declare(
   GIT_SHALLOW TRUE
 )
 
+set (UT_ENABLE_MODULES ON)
+
 message(STATUS "Fetching dependencies...")
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set(CMAKE_SKIP_INSTALL_RULES ON CACHE BOOL "" FORCE)
@@ -19,14 +21,13 @@ add_library(test_common INTERFACE)
 target_compile_features(test_common INTERFACE cxx_std_23)
 target_link_libraries(test_common INTERFACE ut::ut bencher::bencher)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(test_common INTERFACE -fno-rtti)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(test_common INTERFACE -Wall -Wextra -pedantic $<$<CONFIG:Debug>:-Werror>)
     else()
         target_compile_options(test_common INTERFACE -Wall -Wextra -pedantic)
     endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(test_common INTERFACE /GR- /bigobj)
+    target_compile_options(test_common INTERFACE /bigobj)
     target_compile_options(test_common INTERFACE /W4 /wd4459 /wd4805)
 endif()
 

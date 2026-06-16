@@ -1,9 +1,6 @@
-#pragma once
-
-#include <iostream>
-
+// cache_clearer.ixx
+module;
 #include "bencher/config.hpp"
-
 #if defined(BENCH_WIN)
 #include <Windows.h>
 
@@ -17,6 +14,9 @@
 #include <mach/mach_time.h>
 #include <sys/sysctl.h>
 #endif
+export module bencher.cache_clearer;
+
+import std;
 
 namespace bencher
 {
@@ -100,7 +100,7 @@ namespace bencher
    }
 #endif
 
-   struct cache_clearer
+   export struct cache_clearer
    {
       inline static size_t cache_line_size = 64;
       inline static size_t l1_cache_size{get_l1_cache_size()};

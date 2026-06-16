@@ -1,8 +1,13 @@
-#include "bencher/bar_chart.hpp"
-#include "bencher/bencher.hpp"
-#include "bencher/diagnostics.hpp"
-#include "bencher/file.hpp"
-#include "ut/ut.hpp"
+import bencher;
+import bencher.bar_chart;
+import bencher.diagnostics;
+import bencher.file;
+
+import ut;
+
+import std;
+
+using std::size_t;
 
 using namespace ut;
 
@@ -350,7 +355,7 @@ suite bar_chart_tests = [] {
 
    "rgb_to_hex"_test = [] {
       bencher::RGB color{255, 128, 64};
-      auto hex = rgb_to_hex(color);
+      auto hex = bencher::rgb_to_hex(color);
       expect(hex == "#FF8040");
    };
 
@@ -611,7 +616,7 @@ suite event_collector_tests = [] {
       bencher::event_collector collector;
       bencher::event_count count;
 
-      constexpr uint64_t expected_bytes = 42;
+      constexpr std::uint64_t expected_bytes = 42;
       (void)collector.start(count, [] { return expected_bytes; });
 
       expect(count.bytes_processed == expected_bytes);

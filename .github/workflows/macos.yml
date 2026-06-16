@@ -1,0 +1,38 @@
+name: macOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  macos:
+    runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug]
+        llvm_version: [20]
+        preset:
+          - configure_preset: "macos"
+            build_preset: "macos-build"
+            test_preset: "macos-test"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Locate Homebrew LLVM
+        id: llvm
+        run: |
+          llvm_prefix="$(brew --prefix llvm@${{ matrix.llvm_version }})"
+          "$llvm_prefix/bin/clang++" --version
+          echo "cxx=$llvm_prefix/bin/clang++" >> "$GITHUB_OUTPUT"
+
+      - name: "Build & Test"
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: ${{ matrix.preset.configure_preset }}
+          configurePresetAdditionalArgs: "['-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}', '-DCMAKE_CXX_COMPILER=${{ steps.llvm.outputs.cxx }}']"
+          buildPreset: ${{ matrix.preset.build_preset }}
+          testPreset: ${{ matrix.preset.test_preset }}
