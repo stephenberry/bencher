@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>  // evict_l1_cache / Windows get_l1_cache_size use std::vector on every platform
 
 #include "bencher/config.hpp"
 
@@ -8,7 +9,9 @@
 #include <Windows.h>
 
 #elif defined(BENCH_LINUX)
-#include <xmmintrin.h>
+#if defined(__x86_64__) || defined(__i386__)
+#include <xmmintrin.h>  // x86-only (SSE: _mm_sfence); the ARM flush_cache path below uses dc cvac / dsb
+#endif
 
 #include <fstream>
 #include <string>

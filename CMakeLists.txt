@@ -4,7 +4,7 @@ include(cmake/prelude.cmake)
 
 project(
     bencher
-    VERSION 0.2.1
+    VERSION 0.2.2
     LANGUAGES CXX
 )
 
