@@ -277,6 +277,7 @@ The library collects the following metrics (platform-dependent):
 | Metric | Description |
 |--------|-------------|
 | Throughput (MB/s) | Processing speed in megabytes per second |
+| Median Time per Execution | Median latency of one benchmark invocation in ns/us/ms/s |
 | Throughput MAD (±%) | Median Absolute Deviation of throughput |
 | Instructions per Execution | Total CPU instructions per benchmark run |
 | Instructions per Cycle (IPC) | CPU efficiency metric |
@@ -407,6 +408,7 @@ Example output:
       "name": "JSON Read",
       "throughput_mb_per_sec": 1847.3,
       "time_in_ns": 856420,
+      "median_time_in_ns": 390.8,
       "bytes_processed": 722,
       "instructions_per_execution": 45023,
       "instructions_per_cycle": 2.31,
@@ -427,8 +429,9 @@ Performance Metrics for: JSON benchmarks
 ----------------------------------------------------
  - JSON Read -
 Bytes Processed                         :        722
-Throughput (MB/s)                        :       1847
-Throughput MAD (±%)                      :       1.2
+Throughput (MB/s)                       :       1847
+Median Time per Execution               :  390.80 ns
+Throughput MAD (±%)                     :        1.2
 Instructions per Execution              :      45023
 Instructions per Cycle                  :       2.31
 Cycles per Execution                    :      19487

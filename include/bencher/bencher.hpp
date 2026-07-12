@@ -41,7 +41,10 @@ namespace bencher
       std::optional<double> cycles_per_byte;
       std::optional<double> frequency_ghz;
       std::string name{};
+      // Sum of the measured execution times across all iterations
       double time_in_ns{};
+      // Median execution time for a single invocation
+      double median_time_in_ns{};
 
       BENCH_ALWAYS_INLINE bool operator>(const performance_metrics& other) const
       {
@@ -481,7 +484,7 @@ namespace bencher
          pm.bytes_processed = bytes_processed;
 
          // Compute medians
-         [[maybe_unused]] double median_ns = stats::median(ns_values);
+         double median_ns = stats::median(ns_values);
          double median_cycles = stats::median(cycles_values);
          double median_instr = stats::median(instr_values);
          double median_br = stats::median(br_values);
@@ -490,6 +493,7 @@ namespace bencher
          // Sum of times across these runs
          double total_ns = std::accumulate(ns_values.begin(), ns_values.end(), 0.0);
          pm.time_in_ns = total_ns;
+         pm.median_time_in_ns = median_ns;
 
          // Compute throughput based on provided throughput_values
          double median_throughput = stats::median(throughput_values);
