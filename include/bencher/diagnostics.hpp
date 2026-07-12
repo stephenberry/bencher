@@ -7,6 +7,24 @@
 
 namespace bencher
 {
+   [[nodiscard]] inline std::string format_duration(double nanoseconds)
+   {
+      constexpr double nanoseconds_per_microsecond = 1'000.0;
+      constexpr double nanoseconds_per_millisecond = 1'000'000.0;
+      constexpr double nanoseconds_per_second = 1'000'000'000.0;
+
+      if (nanoseconds < nanoseconds_per_microsecond) {
+         return std::format("{:.2f} ns", nanoseconds);
+      }
+      if (nanoseconds < nanoseconds_per_millisecond) {
+         return std::format("{:.2f} us", nanoseconds / nanoseconds_per_microsecond);
+      }
+      if (nanoseconds < nanoseconds_per_second) {
+         return std::format("{:.2f} ms", nanoseconds / nanoseconds_per_millisecond);
+      }
+      return std::format("{:.2f} s", nanoseconds / nanoseconds_per_second);
+   }
+
    inline std::string format_bar_chart(const std::vector<std::string>& names, const std::vector<double>& values)
    {
       // Validate input sizes
@@ -149,6 +167,8 @@ namespace bencher
 
          print_metric(processed_label, value.bytes_processed);
          print_metric(throughput_label, value.throughput_mb_per_sec);
+         std::cout << std::format("{:<40}: {:>10}\n", "Median Time per Execution",
+                                  format_duration(value.median_time_in_ns));
          print_metric("Throughput MAD (±%)", value.throughput_median_percentage_deviation);
          print_metric("Instructions per Execution", value.instructions_per_execution);
          print_metric("Instructions Percentage Deviation (±%)", value.instructions_percentage_deviation);
@@ -286,6 +306,7 @@ namespace bencher
 
          markdown.append(format_metric(processed_label, value.bytes_processed));
          markdown.append(format_metric(throughput_label, value.throughput_mb_per_sec));
+         markdown.append(std::format("**Median Time per Execution**: {}\n", format_duration(value.median_time_in_ns)));
          markdown.append(format_metric("Throughput MAD (±%)", value.throughput_median_percentage_deviation));
          markdown.append(format_metric("Instructions per Execution", value.instructions_per_execution));
          markdown.append(

@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "bencher/bar_chart.hpp"
 #include "bencher/bencher.hpp"
 #include "bencher/diagnostics.hpp"
@@ -324,6 +326,18 @@ suite performance_metrics_tests = [] {
       expect(!(a > b));
       expect(!(b > a));
    };
+
+   "collect_metrics_reports_total_and_median_execution_time"_test = [] {
+      bencher::stage stage{"timing_test"};
+      stage.events[0].elapsed = std::chrono::nanoseconds{10};
+      stage.events[1].elapsed = std::chrono::nanoseconds{30};
+      stage.events[2].elapsed = std::chrono::nanoseconds{20};
+
+      const auto metrics = stage.collect_metrics("timed_item", 2, {1.0, 1.0, 1.0});
+
+      expect(metrics.time_in_ns == 60.0);
+      expect(metrics.median_time_in_ns == 20.0);
+   };
 };
 
 suite bar_chart_tests = [] {
@@ -391,6 +405,13 @@ suite bar_chart_tests = [] {
 };
 
 suite diagnostics_tests = [] {
+   "format_duration_selects_readable_units"_test = [] {
+      expect(bencher::format_duration(42.0) == "42.00 ns");
+      expect(bencher::format_duration(1'500.0) == "1.50 us");
+      expect(bencher::format_duration(1'500'000.0) == "1.50 ms");
+      expect(bencher::format_duration(1'500'000'000.0) == "1.50 s");
+   };
+
    "to_markdown_output"_test = [] {
       bencher::stage stage{"markdown_test"};
       stage.min_execution_count = 5;
@@ -404,6 +425,7 @@ suite diagnostics_tests = [] {
       expect(markdown.find("markdown_test") != std::string::npos);
       expect(markdown.find("test_item") != std::string::npos);
       expect(markdown.find("Throughput") != std::string::npos);
+      expect(markdown.find("Median Time per Execution") != std::string::npos);
    };
 
    "bar_chart_from_stage"_test = [] {
